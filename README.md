@@ -1,4 +1,4 @@
-![logo](https://github.com/alainrinder/impro.js/raw/master/media/logo/logo.h.svg "Logo")
+![](./media/logo/logo.h.svg =500x125)
 
 # impro.js
 **Im**age **Pro**cessing Javascript Library &amp; Web App
