@@ -3,13 +3,15 @@
 // jshint unused:false
 var ImPro = (function () {
   var ImPro = function ImPro() {
+    var that = this;
+
     /**
      * Create an image constructor for the specified data type and channel count.
      * @param {string} dataType - Type of data (cf. TypedArray)
      * @param {number} channels - Number of channel: 1 or 4
-     * @return {Function} Image constructor
+     * @return {function} Image constructor
      */
-    var ImageBuilder = function ImageBuilder(dataType, channels) {
+    function ImageBuilder(dataType, channels) {
       var arrayType = window[dataType + 'Array'];
 
       /**
@@ -19,7 +21,7 @@ var ImPro = (function () {
        * @param {number} height - The height of the image
        * @param {TypedArray} data - An array containing pixel data
        */
-      var Image = function Image(width, height, data) {
+      that.AbstractImage = function(width, height, data) {
         /** 
          * Description of data type
          * @type {string}
@@ -37,7 +39,7 @@ var ImPro = (function () {
         this.channels = channels;
         /** 
          * Width of the image
-         * @member {number}
+         * @type {number}
          */
         this.width = width;
         /** 
@@ -68,8 +70,8 @@ var ImPro = (function () {
         if (data instanceof arrayType || data instanceof Array) this.data.set(data);
       };
 
-      return Image;
-    };
+      return that.AbstractImage;
+    }
 
     var dataTypes = [
       'Uint8Clamped', // native default data type of canvas
@@ -84,10 +86,18 @@ var ImPro = (function () {
     ];
 
     for (var t in dataTypes) {
-      this[dataTypes[t] + 'GrayImage'] = ImageBuilder(dataTypes, 1);
-      this[dataTypes[t] + 'RgbImage' ] = ImageBuilder(dataTypes, 3);
-      this[dataTypes[t] + 'RgbaImage'] = ImageBuilder(dataTypes, 4);
+      this[dataTypes[t] + 'GrayImage'] = ImageBuilder(dataTypes[t], 1);
+      this[dataTypes[t] + 'RgbImage' ] = ImageBuilder(dataTypes[t], 3);
+      this[dataTypes[t] + 'RgbaImage'] = ImageBuilder(dataTypes[t], 4);
     }
+
+    /**
+     * Create a new process.
+     * @class 
+     */
+    this.Process = function() {
+
+    };
 
     this.init = function() {
 

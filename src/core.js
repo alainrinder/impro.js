@@ -1,13 +1,15 @@
 // jshint unused:false
 var ImPro = (function () {
   var ImPro = function ImPro() {
+    var that = this;
+
     /**
      * Create an image constructor for the specified data type and channel count.
      * @param {string} dataType - Type of data (cf. TypedArray)
      * @param {number} channels - Number of channel: 1 or 4
-     * @return {Function} Image constructor
+     * @return {function} Image constructor
      */
-    var ImageBuilder = function ImageBuilder(dataType, channels) {
+    function ImageBuilder(dataType, channels) {
       var arrayType = window[dataType + 'Array'];
 
       /**
@@ -17,7 +19,7 @@ var ImPro = (function () {
        * @param {number} height - The height of the image
        * @param {TypedArray} data - An array containing pixel data
        */
-      var Image = function Image(width, height, data) {
+      that.AbstractImage = function(width, height, data) {
         /** 
          * Description of data type
          * @type {string}
@@ -66,8 +68,8 @@ var ImPro = (function () {
         if (data instanceof arrayType || data instanceof Array) this.data.set(data);
       };
 
-      return Image;
-    };
+      return that.AbstractImage;
+    }
 
     var dataTypes = [
       'Uint8Clamped', // native default data type of canvas
@@ -81,15 +83,20 @@ var ImPro = (function () {
       'Float64'
     ];
 
-    this.image = {};
-
     for (var t in dataTypes) {
-      this.image[dataTypes[t] + 'GrayImage'] = ImageBuilder(dataTypes, 1);
-      this.image[dataTypes[t] + 'RgbImage' ] = ImageBuilder(dataTypes, 3);
-      this.image[dataTypes[t] + 'RgbaImage'] = ImageBuilder(dataTypes, 4);
+      var dataType = dataTypes[t];
+      this[dataType + 'GrayImage'] = ImageBuilder(dataType, 1);
+      this[dataType + 'RgbImage' ] = ImageBuilder(dataType, 3);
+      this[dataType + 'RgbaImage'] = ImageBuilder(dataType, 4);
     }
 
-    this.process = {};
+    /**
+     * Create a new process.
+     * @class 
+     */
+    this.Process = function() {
+
+    };
 
     this.init = function() {
 
