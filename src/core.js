@@ -1,6 +1,6 @@
 // jshint unused:false
 var ImPro = (function () {
-  var ImPro = function ImPro() {
+  function ImPro() {
     var that = this;
 
     /**
@@ -17,7 +17,7 @@ var ImPro = (function () {
        * @class 
        * @param {number} width - The width of the image
        * @param {number} height - The height of the image
-       * @param {TypedArray} data - An array containing pixel data
+       * @param {TypedArray} [data] - An array containing pixel data
        */
       that.AbstractImage = function(width, height, data) {
         /** 
@@ -93,15 +93,44 @@ var ImPro = (function () {
     /**
      * Create a new process.
      * @class 
+       * @param {string} name - Name of the process
+       * @param {array} inputs - List of process inputs
+       * @param {array} outputs - List of process outputs
+       * @param {function} run - function to execute
      */
-    this.Process = function() {
-
+    this.Process = function(name, inputs, outputs, run) {
+      this.name = name;
+      this.inputs = inputs; // inputs: {'name1': {type: [...]}}
+      this.outputs = outputs;
+      this.run = run;
     };
+
+    this.testProcess = new this.Process('Test process', 
+      {'Image': {type: [this.Uint8ClampedGrayImage]}}, 
+      {'Image': {type: [this.Uint8ClampedGrayImage]}},
+      function(inputs) {
+        if (Object.keys(inputs).length !== 1) throw new Error('Wrong argument count');
+        if (!inputs.Image) throw new Error('Missing argument "Image"');
+        if (!(inputs.Image instanceof that.Uint8ClampedGrayImage)) throw new Error('Invalid type for argument "Image');
+
+        var inputImage = inputs.Image;
+
+        var outputImage = new that.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
+
+        for (var t = 0, tt = inputImage.length; t < tt; ++t) {
+          outputImage.data[t] = 0xff - inputImage.data[t];
+        }
+
+        var outputs = {'Image': outputImage};
+
+        return outputs;
+      }
+    );
 
     this.init = function() {
 
     };
-  };
+  }
 
   return new ImPro();
 })();
