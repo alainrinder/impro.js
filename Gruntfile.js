@@ -7,8 +7,8 @@ module.exports = function(grunt) {
         separator: '\n\n'
       },
       dist: {
-        src: ['src/*.js', 'src/**/*.js'],
-        dest: 'bin/<%= pkg.name %>.js'
+        src: ['src/main.js', 'src/utils.js', 'src/exception.js', 'src/image.js', 'src/process.js', 'src/**/*.js'],
+        dest: 'bin/<%= pkg.name %>'
       }
     },
     uglify: {
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'bin/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+          'bin/<%= pkg.name.replace(".js", ".min.js") %>': ['<%= concat.dist.dest %>']
         }
       }
     },
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
     removeLoggingCalls: {
       files: ['<%= pkg.name %>.js'],
       options: {
-        methods: ['assert', 'log', 'info', 'warn'], 
+        methods: ['assert', 'log', 'info', 'warn'],
         strategy: function(statement) {
           return 'null /* ' + statement + ' */';
         }
@@ -51,7 +51,7 @@ module.exports = function(grunt) {
     },
     jsdoc: {
       dist : {
-        src: ['src/*.js', 'src/**/*.js'], 
+        src: ['src/*.js', 'src/**/*.js'],
         dest: 'doc',
         lenient: true
       }
