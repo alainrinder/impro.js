@@ -11,4 +11,4 @@ You can find the changelog on [CHANGELOG.md](./CHANGELOG.md)
 
 ## Authors
 * [Alain Rinder](https://github.com/alainrinder)
-* [Jean-Daniel Borowy](https://github.com/jdborowy)
+* [Jean-Daniel Borowy](https://github.com/jdborowy) *(previous project)*
