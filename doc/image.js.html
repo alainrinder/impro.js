@@ -45,17 +45,29 @@
     'Float32',
     'Float64'
   ];
+
   /**
-  * Abstract Imqge constructor. Should not be called but from a child constructor with 'super' function.
-  * @class
-  * @param {string} dataType - Type of data store in pixel data
-  * @param {number} channels - Count of channels: 1 for Gray, 3 for RGB, 4 for RGBA
-  * @param {number} width - The width of the image
-  * @param {number} height - The height of the image
-  * @param {TypedArray} [data] - An array containing pixel data
-  */
-  that.AbstractImage = function(dataType, channels, width, height, data) {
+   * List of image channel profiles
+   * @type {{Object.&lt;string, number>}}
+   */
+  that.channelProfiles = {
+    'Gray': 1,
+    'Rgb' : 3,
+    'Rgba': 4
+  };
+
+  /**
+   * Abstract Image constructor. Should not be called but from a child constructor with 'super' function.
+   * @class
+   * @param {string} dataType - Type of data store in pixel data (see dataTypes array)
+   * @param {string} channelProfile - Type and number of channels (see channelProfiles array)
+   * @param {number} width - The width of the image
+   * @param {number} height - The height of the image
+   * @param {TypedArray} [data] - An array containing pixel data
+   */
+  function AbstractImage(dataType, channelProfile, width, height, data) {
     var arrayType = window[dataType + 'Array'];
+    var channelCount = that.channelProfiles[channelProfile];
     /**
      * Description of data type
      * @type {string}
@@ -67,10 +79,15 @@
      */
     this.arrayType = arrayType;
     /**
+     * Channel profile
+     * @type {string}
+     */
+    this.channelProfile = channelProfile;
+    /**
      * Channel count
      * @type {number}
      */
-    this.channels = channels;
+    this.channelCount = channelCount;
     /**
      * Width of the image
      * @type {number}
@@ -85,52 +102,53 @@
      * Byte offset between adjacent pixels on x-axis
      * @type {number}
      */
-    this.dx = channels;
+    this.dx = channelCount;
     /**
      * Byte offset between adjacent pixels on y-axis
      * @type {number}
      */
-    this.dy = width*channels;
+    this.dy = width*channelCount;
     /**
      * Data array length
      * @type {number}
      */
-    this.length = width*height*channels;
+    this.length = width*height*channelCount;
     /**
      * Pixel data
      * @type {TypedArray}
      */
     this.data = new arrayType(this.length);
     if (data instanceof arrayType || data instanceof Array) this.data.set(data);
-  };
+  }
 
   /**
-   * Create an image constructor for the given data type and channel count.
-   * @param {string} dataType - Type of data (cf. TypedArray)
-   * @param {number} channels - Number of channel: 1 or 4
+   * Create an image constructor for the given data type and channel profile.
+   * @param {string} dataType - Type of data (see dataTypes array)
+   * @param {string} channelProfile - Channel profile (see channelProfiles array)
    * @returns {function} Image constructor
    */
-  function buildImageConstructor(dataType, channels) {
+  function buildImageConstructor(dataType, channelProfile) {
     /**
-     * Create a new image with the given data type and channel count.
+     * Create a new image with the given data type and channel profile.
      * @class
+     * @constructs {DataType}{ChannelProfile}Image
      * @implements {AbstractImage}
      * @param {number} width - The width of the image
      * @param {number} height - The height of the image
      * @param {TypedArray} [data] - An array containing pixel data
      */
-    var TypedImage = that.extends(that.AbstractImage, function(width, height, data) {
-      that.super(this, [dataType, channels, width, height, data]);
+    that[dataType + channelProfile + 'Image'] = that.extends(AbstractImage,
+    function(width, height, data) {
+      that.super(this, [dataType, channelProfile, width, height, data]);
     });
-
-    return TypedImage;
   }
 
+  // For each data type, for each channel profile (Gray, RGB, RGBA), create an image constructor
   for (var t in that.dataTypes) {
     var dataType = that.dataTypes[t];
-    that[dataType + 'GrayImage'] = buildImageConstructor(dataType, 1);
-    that[dataType + 'RgbImage' ] = buildImageConstructor(dataType, 3);
-    that[dataType + 'RgbaImage'] = buildImageConstructor(dataType, 4);
+    for (var p in that.channelProfiles) {
+      buildImageConstructor(dataType, p);
+    }
   }
 })(ImPro);
 </code></pre>
@@ -143,13 +161,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-buildImageConstructor-TypedImage.html">TypedImage</a></li><li><a href="Process.html">Process</a></li><li><a href="that.AbstractImage.html">AbstractImage</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="that.BooleanProcessParam.html">BooleanProcessParam</a></li><li><a href="that.NumberProcessParam.html">NumberProcessParam</a></li><li><a href="that.Process.html">Process</a></li><li><a href="that.SelectProcessParam.html">SelectProcessParam</a></li><li><a href="%257BDataType%257D%257BChannelProfile%257DImage.html">{DataType}{ChannelProfile}Image</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Mar 20 2018 00:47:57 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Mar 21 2018 00:54:38 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: TypedImage</title>
+    <title>JSDoc: Class: NumberProcessParam</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: TypedImage</h1>
+    <h1 class="page-title">Class: NumberProcessParam</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>TypedImage<span class="signature">(width, height, data<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>NumberProcessParam<span class="signature">(name, options<span class="signature-attributes">opt</span>, defaultValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
     
 </header>
@@ -41,7 +41,7 @@
     
 
     
-    <h4 class="name" id="TypedImage"><span class="type-signature"></span>new TypedImage<span class="signature">(width, height, data<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="NumberProcessParam"><span class="type-signature"></span>new NumberProcessParam<span class="signature">(name, options<span class="signature-attributes">opt</span>, defaultValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -49,7 +49,7 @@
 
 
 <div class="description">
-    Create a new image with the given data type and channel count.
+    Number process param constructor.
 </div>
 
 
@@ -77,6 +77,8 @@
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -87,13 +89,13 @@
 
         <tr>
             
-                <td class="name"><code>width</code></td>
+                <td class="name"><code>name</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">string</span>
 
 
             
@@ -110,52 +112,25 @@
             
 
             
-
-            <td class="description last">The width of the image</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>height</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
+                <td class="default">
                 
                 </td>
             
 
-            
-
-            <td class="description last">The height of the image</td>
+            <td class="description last">Name of the parameter</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">TypedArray</span>
+<span class="param-type">Object.&lt;string, *></span>
 
 
             
@@ -174,8 +149,53 @@
             
 
             
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
 
-            <td class="description last">An array containing pixel data</td>
+            <td class="description last">Additional options: step (1), min (none), max (none)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>defaultValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">Default value of the parameter</td>
         </tr>
 
     
@@ -200,13 +220,6 @@
     
 
     
-    <dt class="implements">Implements:</dt>
-    <dd class="implements"><ul>
-        
-            <li>AbstractImage</li>
-        
-    </ul></dd>
-    
 
     
 
@@ -223,7 +236,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="image.js.html">image.js</a>, <a href="image.js.html#line94">line 94</a>
+        <a href="process.js.html">process.js</a>, <a href="process.js.html#line42">line 42</a>
     </li></ul></dd>
     
 
@@ -283,13 +296,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-buildImageConstructor-TypedImage.html">TypedImage</a></li><li><a href="Process.html">Process</a></li><li><a href="that.AbstractImage.html">AbstractImage</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="that.BooleanProcessParam.html">BooleanProcessParam</a></li><li><a href="that.NumberProcessParam.html">NumberProcessParam</a></li><li><a href="that.Process.html">Process</a></li><li><a href="that.SelectProcessParam.html">SelectProcessParam</a></li><li><a href="%257BDataType%257D%257BChannelProfile%257DImage.html">{DataType}{ChannelProfile}Image</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Mar 20 2018 00:47:57 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Mar 21 2018 00:54:38 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -82,17 +82,29 @@ var ImPro;
     'Float32',
     'Float64'
   ];
+
   /**
-  * Abstract Imqge constructor. Should not be called but from a child constructor with 'super' function.
-  * @class
-  * @param {string} dataType - Type of data store in pixel data
-  * @param {number} channels - Count of channels: 1 for Gray, 3 for RGB, 4 for RGBA
-  * @param {number} width - The width of the image
-  * @param {number} height - The height of the image
-  * @param {TypedArray} [data] - An array containing pixel data
-  */
-  that.AbstractImage = function(dataType, channels, width, height, data) {
+   * List of image channel profiles
+   * @type {{Object.<string, number>}}
+   */
+  that.channelProfiles = {
+    'Gray': 1,
+    'Rgb' : 3,
+    'Rgba': 4
+  };
+
+  /**
+   * Abstract Image constructor. Should not be called but from a child constructor with 'super' function.
+   * @class
+   * @param {string} dataType - Type of data store in pixel data (see dataTypes array)
+   * @param {string} channelProfile - Type and number of channels (see channelProfiles array)
+   * @param {number} width - The width of the image
+   * @param {number} height - The height of the image
+   * @param {TypedArray} [data] - An array containing pixel data
+   */
+  function AbstractImage(dataType, channelProfile, width, height, data) {
     var arrayType = window[dataType + 'Array'];
+    var channelCount = that.channelProfiles[channelProfile];
     /**
      * Description of data type
      * @type {string}
@@ -104,10 +116,15 @@ var ImPro;
      */
     this.arrayType = arrayType;
     /**
+     * Channel profile
+     * @type {string}
+     */
+    this.channelProfile = channelProfile;
+    /**
      * Channel count
      * @type {number}
      */
-    this.channels = channels;
+    this.channelCount = channelCount;
     /**
      * Width of the image
      * @type {number}
@@ -122,52 +139,53 @@ var ImPro;
      * Byte offset between adjacent pixels on x-axis
      * @type {number}
      */
-    this.dx = channels;
+    this.dx = channelCount;
     /**
      * Byte offset between adjacent pixels on y-axis
      * @type {number}
      */
-    this.dy = width*channels;
+    this.dy = width*channelCount;
     /**
      * Data array length
      * @type {number}
      */
-    this.length = width*height*channels;
+    this.length = width*height*channelCount;
     /**
      * Pixel data
      * @type {TypedArray}
      */
     this.data = new arrayType(this.length);
     if (data instanceof arrayType || data instanceof Array) this.data.set(data);
-  };
+  }
 
   /**
-   * Create an image constructor for the given data type and channel count.
-   * @param {string} dataType - Type of data (cf. TypedArray)
-   * @param {number} channels - Number of channel: 1 or 4
+   * Create an image constructor for the given data type and channel profile.
+   * @param {string} dataType - Type of data (see dataTypes array)
+   * @param {string} channelProfile - Channel profile (see channelProfiles array)
    * @returns {function} Image constructor
    */
-  function buildImageConstructor(dataType, channels) {
+  function buildImageConstructor(dataType, channelProfile) {
     /**
-     * Create a new image with the given data type and channel count.
+     * Create a new image with the given data type and channel profile.
      * @class
+     * @constructs {DataType}{ChannelProfile}Image
      * @implements {AbstractImage}
      * @param {number} width - The width of the image
      * @param {number} height - The height of the image
      * @param {TypedArray} [data] - An array containing pixel data
      */
-    var TypedImage = that.extends(that.AbstractImage, function(width, height, data) {
-      that.super(this, [dataType, channels, width, height, data]);
+    that[dataType + channelProfile + 'Image'] = that.extends(AbstractImage,
+    function(width, height, data) {
+      that.super(this, [dataType, channelProfile, width, height, data]);
     });
-
-    return TypedImage;
   }
 
+  // For each data type, for each channel profile (Gray, RGB, RGBA), create an image constructor
   for (var t in that.dataTypes) {
     var dataType = that.dataTypes[t];
-    that[dataType + 'GrayImage'] = buildImageConstructor(dataType, 1);
-    that[dataType + 'RgbImage' ] = buildImageConstructor(dataType, 3);
-    that[dataType + 'RgbaImage'] = buildImageConstructor(dataType, 4);
+    for (var p in that.channelProfiles) {
+      buildImageConstructor(dataType, p);
+    }
   }
 })(ImPro);
 
@@ -175,51 +193,141 @@ var ImPro;
 var ImPro;
 
 (function (that) {
-  // type: boolean, integer, float, select
-  function ProcessParam(type, label, defaultValue, options) {
-
+  /**
+   * Abstract process param constructor. Should not be called but from a child constructor with 'super' function.
+   * @class
+   * @param {string} name - Name of the parameter
+   * @param {*} defaultValue - Default value of the parameter
+   */
+  function AbstractProcessParam(name, defaultValue) {
+    /**
+     * Name of the parameter
+     * @type {string}
+     */
+    this.name = name;
+    /**
+     * Default value of the parameter
+     * @type {*}
+     */
+    this.defaultValue = defaultValue;
   }
 
-  this.BooleanProcessParam = this.extends(ProcessParam, function(label, defaultValue) {
-    this.super(this, ['boolean', label, defaultValue, {}]); // Call to super
+  /**
+   * Boolean process param constructor.
+   * @class
+   * @param {string} name - Name of the parameter
+   * @param {boolean} [defaultValue = false] - Default value of the parameter
+   */
+  that.BooleanProcessParam = that.extends(AbstractProcessParam,
+  function(name, defaultValue) {
+    defaultValue = !!defaultValue;
+    that.super(this, [name, defaultValue]);
   });
 
   /**
-   * Create a new process.
+   * Number process param constructor.
    * @class
-     * @param {string} name - Name of the process
-     * @param {ProcessParam[]} paramConfigs - List of process inputs {'<paramId>': {label: '<paramLabel>', type: 'boolean'|'integer'|'float'}, ...}
-     * @param {array} inputs - List of process inputs
-     * @param {array} outputs - List of process outputs
-     * @param {function(array, array)} run - function to execute
+   * @param {string} name - Name of the parameter
+   * @param {Object.<string, *>} [options = {}] - Additional options: step (1), min (none), max (none)
+   * @param {number} [defaultValue = 0] - Default value of the parameter
    */
-  this.Process = function(name, paramConfigs, inputConfigs, outputConfigs, run) {
+  that.NumberProcessParam = that.extends(AbstractProcessParam,
+  function(name, options, defaultValue) {
+    defaultValue = (typeof defaultValue === 'number') ? defaultValue : 0;
+    that.super(this, [name, defaultValue]);
+  });
+
+  /**
+   * Select process param constructor.
+   * @class
+   * @param {string} name - Name of the parameter
+   * @param {Object.<string, *>} values - List of selectable values, with the key as label
+   * @param {string|null} [defaultValue = null] - Key of the value selected by default; none if null
+   */
+  that.SelectProcessParam = that.extends(AbstractProcessParam,
+  function(name, values, defaultValue) {
+    defaultValue = (defaultValue in values) ? defaultValue : null;
+    that.super(this, [name, defaultValue]);
+  });
+
+  // TODO: ProcessInput & ProcessOutput classes
+
+  /**
+   * Process constructor.
+   * @class
+   * @param {string} name - Name of the process
+   * @param {Object.<string, AbstractProcessParam>} paramConfigs - List of process params
+   * @param {Object.<string, *>} inputConfigs - List of process inputs
+   * @param {Object.<string, *>} outputConfigs - List of process outputs
+   * @param {function(Object.<string, *>, Object.<string, *>)} run - Function to execute
+   */
+  that.Process = function(name, paramConfigs, inputConfigs, outputConfigs, run) {
+    /**
+     * Name of the process
+     * @type {string}
+     */
     this.name = name;
+    /**
+     * List of process params
+     * @type {Object.<string, AbstractProcessParam>}
+     */
     this.paramConfigs = paramConfigs;
+    /**
+     * List of process inputs
+     * @type {Object.<string, *>}
+     */
     this.inputConfigs = inputConfigs;
+    /**
+     * List of process outputs
+     * @type {Object.<string, *>}
+     */
     this.outputConfigs = outputConfigs;
+    /**
+     * Function to execute
+     * @type {function(Object.<string, *>, Object.<string, *>)}
+     */
     this.run = function(inputs, params) {
       // Check inputs
-      if (Object.keys(inputs).length !== 1) throw new Error('Wrong argument count');
-      if (!inputs.Image) throw new Error('Missing argument "Image"');
-      if (!(inputs.Image instanceof that.Uint8ClampedGrayImage)) throw new Error('Invalid type for argument "Image');
+      for (var i in inputConfigs) {
+        if (!(i in inputs)) {
+          throw new Error('Missing input "' + i + '". Abort.');
+        }
+        var input = inputs[i], inputConfig = inputConfigs[i], inputSupportedType = false;
+        for (var it in inputConfig.types) {
+          inputSupportedType = inputSupportedType || (input instanceof inputConfig.types[it]);
+        }
+        if (!inputSupportedType) {
+          throw new Error('Invalid type for input "' + i + '". Abort.');
+        }
+      }
 
+      // TODO: Check params
+
+      // Run
       var outputs = run(inputs, params);
 
       // Check outputs
+      for (var o in outputConfigs) {
+        if (!(o in outputs)) {
+          throw new Error('Missing output "' + o + '". Abort.');
+        }
+        var output = outputs[o], outputConfig = outputConfigs[o], outputSupportedType = false;
+        for (var ot in outputConfig.types) {
+          outputSupportedType = outputSupportedType || (output instanceof outputConfig.types[ot]);
+        }
+        if (!outputSupportedType) {
+          throw new Error('Invalid type for output "' + o + '". Abort.');
+        }
+      }
 
       return outputs;
     };
   };
 
-  this.testProcess = new this.Process('Test process',
-    {'Image': {type: [this.Uint8ClampedGrayImage]}},
-    {'Image': {type: [this.Uint8ClampedGrayImage]}},
+  that.testProcess = new that.Process('Test process', {},
+    {'Image': {types: [that.Uint8ClampedGrayImage]}},
+    {'Image': {types: [that.Uint8ClampedGrayImage]}},
     function(inputs) {
-      if (Object.keys(inputs).length !== 1) throw new Error('Wrong argument count');
-      if (!inputs.Image) throw new Error('Missing argument "Image"');
-      if (!(inputs.Image instanceof that.Uint8ClampedGrayImage)) throw new Error('Invalid type for argument "Image');
-
       var inputImage = inputs.Image;
 
       var outputImage = new that.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
@@ -228,9 +336,7 @@ var ImPro;
         outputImage.data[t] = 0xff - inputImage.data[t];
       }
 
-      var outputs = {'Image': outputImage};
-
-      return outputs;
+      return {'Image': outputImage};
     }
   );
 })(ImPro);
