@@ -340,7 +340,7 @@ var ImPro;
   };
 
   // FIXME move to test directory
-  that.testProcess = new that.Process('Test process', {},
+  /*that.testProcess = new that.Process('Test process', {},
     {'Image': [that.Uint8ClampedGrayImage]},
     {'Image': [that.Uint8ClampedGrayImage]},
     function(inputs) {
@@ -354,5 +354,5 @@ var ImPro;
 
       return {'Image': outputImage};
     }
-  );
+  );*/
 })(ImPro);

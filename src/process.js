@@ -64,8 +64,6 @@ var ImPro;
     that.super(this, ['string', name, defaultValue]);
   });
 
-  // TODO: ProcessInput & ProcessOutput classes
-
   /**
    * Process constructor.
    * @class
@@ -146,21 +144,4 @@ var ImPro;
       return outputs;
     };
   };
-
-  // FIXME move to test directory
-  that.testProcess = new that.Process('Test process', {},
-    {'Image': [that.Uint8ClampedGrayImage]},
-    {'Image': [that.Uint8ClampedGrayImage]},
-    function(inputs) {
-      var inputImage = inputs.Image;
-
-      var outputImage = new that.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
-
-      for (var t = 0, tt = inputImage.length; t < tt; ++t) {
-        outputImage.data[t] = 0xff - inputImage.data[t];
-      }
-
-      return {'Image': outputImage};
-    }
-  );
 })(ImPro);

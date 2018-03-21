@@ -1,0 +1,34 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <script src="../bin/impro.js"></script>
+  <script>
+ImPro.testProcess = new ImPro.Process('Test process', {},
+  {'Image': [ImPro.Uint8ClampedGrayImage]},
+  {'Image': [ImPro.Uint8ClampedGrayImage]},
+  function(inputs) {
+    var inputImage = inputs.Image;
+
+    var outputImage = new ImPro.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
+
+    for (var t = 0, tt = inputImage.length; t < tt; ++t) {
+      outputImage.data[t] = 0xff - inputImage.data[t];
+    }
+
+    return {'Image': outputImage};
+  }
+);
+  </script>
+</body>
+</html>
