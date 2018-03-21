@@ -50,11 +50,14 @@ module.exports = function(grunt) {
       }
     },
     jsdoc: {
-      dist : {
+      dist: {
         src: ['src/*.js', 'src/**/*.js'],
         dest: 'doc',
         lenient: true
       }
+    },
+    clean: {
+      doc: ['doc/*.html']
     }
   });
 
@@ -63,9 +66,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-remove-logging-calls');
   grunt.loadNpmTasks('grunt-jsdoc');
 
-  grunt.registerTask('build', ['jshint', 'concat', 'removeLoggingCalls', 'uglify', 'jsdoc']);
+  grunt.registerTask('build', ['jshint', 'concat', 'removeLoggingCalls', 'uglify', 'clean:doc', 'jsdoc']);
   grunt.registerTask('debug', ['jshint', 'concat']);
 };
