@@ -1,5 +1,3 @@
-var ImPro;
-
 (function(that) {
   // Inheritance with params: http://jsfiddle.net/bKUF6/38/
   //

@@ -1,5 +1,3 @@
-var ImPro;
-
 (function (that) {
   /**
    * Abstract process param constructor. Should not be called but from a child constructor with 'super' function.

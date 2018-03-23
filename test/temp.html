@@ -12,9 +12,10 @@
 </head>
 
 <body>
+  <canvas></canvas>
   <script src="../bin/impro.js"></script>
   <script>
-ImPro.testProcess = new ImPro.Process('Test process', {},
+ImPro.negativeProcess = new ImPro.Process('Negative', {},
   {'Image': [ImPro.Uint8ClampedGrayImage]},
   {'Image': [ImPro.Uint8ClampedGrayImage]},
   function(inputs) {
@@ -29,6 +30,11 @@ ImPro.testProcess = new ImPro.Process('Test process', {},
     return {'Image': outputImage};
   }
 );
+
+var i = new ImPro.Uint8ClampedGrayImage(3, 3, [0, 128, 255, 64, 192, 32, 96, 160, 224])
+console.dir(i);
+var o = ImPro.negativeProcess.run({'Image': i})['Image'];
+console.dir(o);
   </script>
 </body>
 </html>

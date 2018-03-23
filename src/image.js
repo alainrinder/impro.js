@@ -1,5 +1,3 @@
-var ImPro;
-
 (function(that) {
   /**
    * List of image data types

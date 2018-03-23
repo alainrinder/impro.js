@@ -1,4 +1,15 @@
 module.exports = function(grunt) {
+  'use script';
+
+  var orderedSources = [
+    'src/main.js',
+    'src/utils.js',
+    'src/exception.js',
+    'src/image.js',
+    'src/process.js',
+    'src/**/*.js'
+  ];
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
@@ -7,7 +18,7 @@ module.exports = function(grunt) {
         separator: '\n\n'
       },
       dist: {
-        src: ['src/main.js', 'src/utils.js', 'src/exception.js', 'src/image.js', 'src/process.js', 'src/**/*.js'],
+        src: orderedSources,
         dest: 'bin/<%= pkg.name %>'
       }
     },
@@ -30,13 +41,13 @@ module.exports = function(grunt) {
         eqeqeq: true,
         quotmark: 'single',
         nonbsp: true,
-        predef: ['gimel'],
+        predef: ['ImPro'],
         globals: {
           window: true,
           console: true,
           module: true,
           document: true,
-          gimel: true,
+          'ImPro': true,
         }
       }
     },
@@ -51,25 +62,34 @@ module.exports = function(grunt) {
     },
     jsdoc: {
       dist: {
-        src: ['src/*.js', 'src/**/*.js'],
+        src: orderedSources,
         dest: 'doc',
         lenient: true
       }
     },
     clean: {
-      doc: ['doc/*.html']
+      'doc': ['doc/*.html']
+    },
+    jasmine: {
+      'all': {
+        src: orderedSources,
+        options: {
+          specs: './spec/*.spec.js',
+          helpers: './spec/*.helper.js'
+        }
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-remove-logging-calls');
   grunt.loadNpmTasks('grunt-jsdoc');
 
   grunt.registerTask('build', ['jshint', 'concat', 'removeLoggingCalls', 'uglify', 'clean:doc', 'jsdoc']);
-  grunt.registerTask('debug', ['jshint', 'concat']);
+  grunt.registerTask('test', ['jshint', 'jasmine:all']);
 };

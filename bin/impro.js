@@ -1,21 +1,11 @@
 'use strict';
 
-// jshint unused:false
-
-var ImPro = (function () {
-  function ImPro() {
-    var that = this;
-
-    this.init = function() {
-
-    };
-  }
+ImPro = (function() {
+  function ImPro() {}
 
   return new ImPro();
 })();
 
-
-var ImPro;
 
 (function(that) {
   // Inheritance with params: http://jsfiddle.net/bKUF6/38/
@@ -62,8 +52,6 @@ var ImPro;
 
 
 
-
-var ImPro;
 
 (function(that) {
   /**
@@ -190,8 +178,6 @@ var ImPro;
 })(ImPro);
 
 
-var ImPro;
-
 (function (that) {
   /**
    * Abstract process param constructor. Should not be called but from a child constructor with 'super' function.
@@ -255,8 +241,6 @@ var ImPro;
     defaultValue = (defaultValue in values) ? defaultValue : null;
     that.super(this, ['string', name, defaultValue]);
   });
-
-  // TODO: ProcessInput & ProcessOutput classes
 
   /**
    * Process constructor.
@@ -338,21 +322,4 @@ var ImPro;
       return outputs;
     };
   };
-
-  // FIXME move to test directory
-  /*that.testProcess = new that.Process('Test process', {},
-    {'Image': [that.Uint8ClampedGrayImage]},
-    {'Image': [that.Uint8ClampedGrayImage]},
-    function(inputs) {
-      var inputImage = inputs.Image;
-
-      var outputImage = new that.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
-
-      for (var t = 0, tt = inputImage.length; t < tt; ++t) {
-        outputImage.data[t] = 0xff - inputImage.data[t];
-      }
-
-      return {'Image': outputImage};
-    }
-  );*/
 })(ImPro);
