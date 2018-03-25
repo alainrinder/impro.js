@@ -1,0 +1,66 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <canvas id="input"></canvas>
+  <canvas id="output"></canvas>
+
+  <script src="../bin/impro.js"></script>
+  <script>
+ImPro.negativeProcess = new ImPro.Process('Negative', {},
+  {'Image': [ImPro.Uint8ClampedGrayImage, ImPro.Uint8ClampedRgbaImage]},
+  {'Image': [ImPro.Uint8ClampedGrayImage, ImPro.Uint8ClampedRgbaImage]},
+  function(inputs) {
+    var inputImage = inputs.Image;
+
+    if (inputImage instanceof ImPro.Uint8ClampedGrayImage) {
+      var outputImage = new ImPro.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
+
+      for (var t = 0, tt = inputImage.length; t < tt; ++t) {
+        outputImage.data[t] = 0xff - inputImage.data[t];
+      }
+    } else if (inputImage instanceof ImPro.Uint8ClampedRgbaImage) {
+      var outputImage = new ImPro.Uint8ClampedRgbaImage(inputImage.width, inputImage.height);
+
+      for (var t = 0, tt = inputImage.length; t < tt; t += 4) {
+        outputImage.data[t + 0] = 0xff - inputImage.data[t + 0];
+        outputImage.data[t + 1] = 0xff - inputImage.data[t + 1];
+        outputImage.data[t + 2] = 0xff - inputImage.data[t + 2];
+        outputImage.data[t + 3] =        inputImage.data[t + 3];
+      }
+    }
+
+    return {'Image': outputImage};
+  }
+);
+/*
+var i = new ImPro.Uint8ClampedGrayImage(3, 3, [0, 128, 255, 64, 192, 32, 96, 160, 224])
+console.dir(i);
+var o = ImPro.negativeProcess.run({'Image': i})['Image'];
+console.dir(o);
+*/
+ImPro.Uint8ClampedRgbaImage.fromLocalFile('samples/lena.png', function(i) {
+  //console.dir(i);
+  var iCanvas = document.querySelector('canvas#input');
+  iCanvas.width = i.width;
+  iCanvas.height = i.height;
+  i.toCanvas(iCanvas);
+  var o = ImPro.negativeProcess.run({'Image': i})['Image'];
+  var oCanvas = document.querySelector('canvas#output');
+  oCanvas.width = o.width;
+  oCanvas.height = o.height;
+  o.toCanvas(oCanvas);
+});
+  </script>
+</body>
+</html>

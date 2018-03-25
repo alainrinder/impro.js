@@ -1,4 +1,4 @@
-ImPro = (function() {
+var ImPro = (function() {
   function ImPro() {}
 
   return new ImPro();

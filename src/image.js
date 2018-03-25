@@ -120,4 +120,59 @@
       buildImageConstructor(dataType, p);
     }
   }
+
+  that.Uint8ClampedRgbaImage.fromCanvas = function(canvas) {
+    var context = canvas.getContext('2d');
+    var canvasData = context.getImageData(0, 0, canvas.width, canvas.height);
+    return new that.Uint8ClampedRgbaImage(canvas.width, canvas.height, canvasData.data);
+  };
+
+  that.Uint8ClampedRgbaImage.fromDomImage = function(domImage) {
+    var canvas = document.createElement('canvas');
+    canvas.width = domImage.width;
+    canvas.height = domImage.height;
+    var context = canvas.getContext('2d');
+    context.drawImage(domImage, 0, 0);
+    return that.Uint8ClampedRgbaImage.fromCanvas(canvas);
+  };
+
+  that.Uint8ClampedRgbaImage.fromLocalFile = function(filePath, callback) {
+    var domImage = new window.Image();
+    domImage.addEventListener('load', function() {
+       var image = that.Uint8ClampedRgbaImage.fromDomImage(domImage);
+       callback(image);
+    }, false);
+    domImage.src = filePath;
+  };
+
+  that.Uint8ClampedRgbaImage.prototype.toCanvas = function(canvas) {
+    if (typeof canvas === 'undefined') {
+      canvas = document.createElement('canvas');
+      canvas.width = this.width;
+      canvas.height = this.height;
+    }
+    var context = canvas.getContext('2d');
+    var imageData = context.createImageData(canvas.width, canvas.height);
+    imageData.data.set(this.data);
+    context.putImageData(imageData, 0, 0);
+    // context.putImageData(this.data, 0, 0);
+    return canvas;
+  };
+
+
+  that.Uint8ClampedRgbaImage.prototype.toDataURL = function() {
+    var canvas = document.createElement('canvas');
+    canvas.width = this.width;
+    canvas.height = this.height;
+    this.toCanvas(canvas);
+    return canvas.toDataURL('image/png');
+  };
+
+  that.Uint8ClampedRgbaImage.prototype.toDomImage = function(domImage) {
+    if (typeof domImage === 'undefined') {
+      domImage = new window.Image();
+    }
+    domImage.src = this.toDataURL();
+    return domImage;
+  };
 })(ImPro);

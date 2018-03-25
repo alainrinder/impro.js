@@ -4,8 +4,8 @@
 **Im**age **Pro**cessing Javascript Library &amp; Web App
 
 ## Version
-Current version is **0.0.2**
-* Main structure refactoring
+Current version is **0.0.3**
+* First working example
 
 You can find the changelog on [CHANGELOG.md](./CHANGELOG.md)
 

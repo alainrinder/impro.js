@@ -36,7 +36,7 @@ module.exports = function(grunt) {
       files: ['Gruntfile.js', 'src/*.js', 'src/**/*.js', 'test/**/*.js'],
       options: {
         undef: true,
-        unused: 'vars',
+        unused: false, //'vars',
         latedef: true,
         eqeqeq: true,
         quotmark: 'single',
@@ -78,6 +78,33 @@ module.exports = function(grunt) {
           helpers: './spec/*.helper.js'
         }
       }
+    },
+    'http-server': {
+      'dev': {
+        root: '.',
+        port: 8080,
+        host: '127.0.0.1',
+        runInBackground: false
+        /*
+        host: "0.0.0.0", // 0.0.0.0 = available everywhere
+        cache: <sec>,
+        showDir : true,
+        autoIndex: true,
+        ext: "html",
+        runInBackground: true|false,
+        logFn: function(req, res, error) { },
+        proxy: "http://someurl.com",
+        https: {
+            cert: "cert.pem",
+            key : "key.pem"
+        },
+        openBrowser : false,
+        customPages: {
+            "/readme": "README.md",
+            "/readme.html": "README.html"
+        }
+        */
+      }
     }
   });
 
@@ -89,7 +116,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-remove-logging-calls');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-http-server');
 
   grunt.registerTask('build', ['jshint', 'concat', 'removeLoggingCalls', 'uglify', 'clean:doc', 'jsdoc']);
   grunt.registerTask('test', ['jshint', 'jasmine:all']);
+  grunt.registerTask('run', ['http-server:dev']);
 };
