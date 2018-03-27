@@ -19,11 +19,6 @@
      * @type {double}
      */
     this.lastExecutionTime = null;
-    /**
-     * List of process params
-     * @type {Object.<string, AbstractProcessParam>}
-     */
-    //this.paramConfigs = paramConfigs;
 
     // inputConfigs default values:
     // connectable: true
@@ -49,7 +44,7 @@
      * Function to execute
      * @type {function(Array)}
      */
-    this.run = function(inputs/*, params*/) {
+    this.run = function(inputs) {
       // Check inputs
       var inputTypes = [];
       for (var i = 0, ii = inputConfigs.length; i < ii; ++i) {
@@ -73,7 +68,7 @@
       var processStart = performance.now();
 
       // Run
-      var outputs = run(inputTypes, inputs/*, params*/);
+      var outputs = run(inputTypes, inputs);
 
       // Timing: end
       var processEnd = performance.now();
