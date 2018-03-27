@@ -47,6 +47,7 @@ module.exports = function(grunt) {
           console: true,
           module: true,
           document: true,
+          performance: true,
           'ImPro': true,
         }
       }
@@ -85,25 +86,6 @@ module.exports = function(grunt) {
         port: 8080,
         host: '127.0.0.1',
         runInBackground: false
-        /*
-        host: "0.0.0.0", // 0.0.0.0 = available everywhere
-        cache: <sec>,
-        showDir : true,
-        autoIndex: true,
-        ext: "html",
-        runInBackground: true|false,
-        logFn: function(req, res, error) { },
-        proxy: "http://someurl.com",
-        https: {
-            cert: "cert.pem",
-            key : "key.pem"
-        },
-        openBrowser : false,
-        customPages: {
-            "/readme": "README.md",
-            "/readme.html": "README.html"
-        }
-        */
       }
     }
   });

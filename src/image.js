@@ -121,12 +121,22 @@
     }
   }
 
+  /**
+   * Read an Uint8ClampedRgbaImage from an existing canvas.
+   * @param {Element} canvas - Canvas element
+   * @returns {ImPro.Uint8ClampedRgbaImage} Image read from the canvas
+   */
   that.Uint8ClampedRgbaImage.fromCanvas = function(canvas) {
     var context = canvas.getContext('2d');
     var canvasData = context.getImageData(0, 0, canvas.width, canvas.height);
     return new that.Uint8ClampedRgbaImage(canvas.width, canvas.height, canvasData.data);
   };
 
+  /**
+   * Read an Uint8ClampedRgbaImage from an existing DOM image.
+   * @param {Element} domImage - DOM image
+   * @returns {ImPro.Uint8ClampedRgbaImage} Image read from the DOM image
+   */
   that.Uint8ClampedRgbaImage.fromDomImage = function(domImage) {
     var canvas = document.createElement('canvas');
     canvas.width = domImage.width;
@@ -136,6 +146,12 @@
     return that.Uint8ClampedRgbaImage.fromCanvas(canvas);
   };
 
+  /**
+   * Read an Uint8ClampedRgbaImage from a local image file
+   * and execute the callback  with the read image as parameter.
+   * @param {string} filePath - Absolute or relative path to a local image
+   * @param {function} callback - Callback called once the image is loaded.
+   */
   that.Uint8ClampedRgbaImage.fromLocalFile = function(filePath, callback) {
     var domImage = new window.Image();
     domImage.addEventListener('load', function() {
@@ -145,6 +161,11 @@
     domImage.src = filePath;
   };
 
+  /**
+   * Paint an Uint8ClampedRgbaImage on a canvas.
+   * @param {Element} canvas - Canvas element
+   * @returns {Element} Canvas element
+   */
   that.Uint8ClampedRgbaImage.prototype.toCanvas = function(canvas) {
     if (typeof canvas === 'undefined') {
       canvas = document.createElement('canvas');
@@ -159,7 +180,10 @@
     return canvas;
   };
 
-
+  /**
+   * Convert an Uint8ClampedRgbaImage to a data URL.
+   * @returns {string} Data URL ot the image
+   */
   that.Uint8ClampedRgbaImage.prototype.toDataURL = function() {
     var canvas = document.createElement('canvas');
     canvas.width = this.width;
@@ -168,6 +192,11 @@
     return canvas.toDataURL('image/png');
   };
 
+  /**
+   * Write an Uint8ClampedRgbaImage as a DOM image.
+   * @param {Element} domImage - DOM Image
+   * @returns {Element} DOM Image
+   */
   that.Uint8ClampedRgbaImage.prototype.toDomImage = function(domImage) {
     if (typeof domImage === 'undefined') {
       domImage = new window.Image();

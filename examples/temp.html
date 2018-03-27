@@ -17,20 +17,20 @@
 
   <script src="../bin/impro.js"></script>
   <script>
-ImPro.negativeProcess = new ImPro.Process('Negative', {},
-  {'Image': [ImPro.Uint8ClampedGrayImage, ImPro.Uint8ClampedRgbaImage]},
-  {'Image': [ImPro.Uint8ClampedGrayImage, ImPro.Uint8ClampedRgbaImage]},
-  function(inputs) {
-    var inputImage = inputs.Image;
+ImPro.negativeProcess = new ImPro.Process('Negative',
+  [{name: 'Image', types: [ImPro.Uint8ClampedGrayImage, ImPro.Uint8ClampedRgbaImage]}],
+  [{name: 'Image', type: function(inputTypes, inputs) { return inputTypes[0]; }}],
+  function(inputTypes, inputs) {
+    var inputImage = inputs[0], outputImage;
 
-    if (inputImage instanceof ImPro.Uint8ClampedGrayImage) {
-      var outputImage = new ImPro.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
+    if (inputTypes[0] === ImPro.Uint8ClampedGrayImage) {
+      outputImage = new ImPro.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
 
       for (var t = 0, tt = inputImage.length; t < tt; ++t) {
         outputImage.data[t] = 0xff - inputImage.data[t];
       }
-    } else if (inputImage instanceof ImPro.Uint8ClampedRgbaImage) {
-      var outputImage = new ImPro.Uint8ClampedRgbaImage(inputImage.width, inputImage.height);
+    } else if (inputTypes[0] === ImPro.Uint8ClampedRgbaImage) {
+      outputImage = new ImPro.Uint8ClampedRgbaImage(inputImage.width, inputImage.height);
 
       for (var t = 0, tt = inputImage.length; t < tt; t += 4) {
         outputImage.data[t + 0] = 0xff - inputImage.data[t + 0];
@@ -40,7 +40,7 @@ ImPro.negativeProcess = new ImPro.Process('Negative', {},
       }
     }
 
-    return {'Image': outputImage};
+    return [outputImage];
   }
 );
 /*
@@ -55,7 +55,7 @@ ImPro.Uint8ClampedRgbaImage.fromLocalFile('samples/lena.png', function(i) {
   iCanvas.width = i.width;
   iCanvas.height = i.height;
   i.toCanvas(iCanvas);
-  var o = ImPro.negativeProcess.run({'Image': i})['Image'];
+  var o = ImPro.negativeProcess.run([i])[0];
   var oCanvas = document.querySelector('canvas#output');
   oCanvas.width = o.width;
   oCanvas.height = o.height;

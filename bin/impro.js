@@ -176,12 +176,22 @@ var ImPro = (function() {
     }
   }
 
+  /**
+   * Read an Uint8ClampedRgbaImage from an existing canvas.
+   * @param {Element} canvas - Canvas element
+   * @returns {ImPro.Uint8ClampedRgbaImage} Image read from the canvas
+   */
   that.Uint8ClampedRgbaImage.fromCanvas = function(canvas) {
     var context = canvas.getContext('2d');
     var canvasData = context.getImageData(0, 0, canvas.width, canvas.height);
     return new that.Uint8ClampedRgbaImage(canvas.width, canvas.height, canvasData.data);
   };
 
+  /**
+   * Read an Uint8ClampedRgbaImage from an existing DOM image.
+   * @param {Element} domImage - DOM image
+   * @returns {ImPro.Uint8ClampedRgbaImage} Image read from the DOM image
+   */
   that.Uint8ClampedRgbaImage.fromDomImage = function(domImage) {
     var canvas = document.createElement('canvas');
     canvas.width = domImage.width;
@@ -191,6 +201,12 @@ var ImPro = (function() {
     return that.Uint8ClampedRgbaImage.fromCanvas(canvas);
   };
 
+  /**
+   * Read an Uint8ClampedRgbaImage from a local image file
+   * and execute the callback  with the read image as parameter.
+   * @param {string} filePath - Absolute or relative path to a local image
+   * @param {function} callback - Callback called once the image is loaded.
+   */
   that.Uint8ClampedRgbaImage.fromLocalFile = function(filePath, callback) {
     var domImage = new window.Image();
     domImage.addEventListener('load', function() {
@@ -200,6 +216,11 @@ var ImPro = (function() {
     domImage.src = filePath;
   };
 
+  /**
+   * Paint an Uint8ClampedRgbaImage on a canvas.
+   * @param {Element} canvas - Canvas element
+   * @returns {Element} Canvas element
+   */
   that.Uint8ClampedRgbaImage.prototype.toCanvas = function(canvas) {
     if (typeof canvas === 'undefined') {
       canvas = document.createElement('canvas');
@@ -214,7 +235,10 @@ var ImPro = (function() {
     return canvas;
   };
 
-
+  /**
+   * Convert an Uint8ClampedRgbaImage to a data URL.
+   * @returns {string} Data URL ot the image
+   */
   that.Uint8ClampedRgbaImage.prototype.toDataURL = function() {
     var canvas = document.createElement('canvas');
     canvas.width = this.width;
@@ -223,6 +247,11 @@ var ImPro = (function() {
     return canvas.toDataURL('image/png');
   };
 
+  /**
+   * Write an Uint8ClampedRgbaImage as a DOM image.
+   * @param {Element} domImage - DOM Image
+   * @returns {Element} DOM Image
+   */
   that.Uint8ClampedRgbaImage.prototype.toDomImage = function(domImage) {
     if (typeof domImage === 'undefined') {
       domImage = new window.Image();
@@ -235,142 +264,94 @@ var ImPro = (function() {
 
 (function (that) {
   /**
-   * Abstract process param constructor. Should not be called but from a child constructor with 'super' function.
-   * @class
-   * @param {string} valueType - Expected type for value
-   * @param {string} name - Name of the parameter
-   * @param {*} defaultValue - Default value of the parameter
-   */
-  function AbstractProcessParam(valueType, name, defaultValue) {
-    /**
-     * Name of the parameter
-     * @type {string}
-     */
-    this.name = name;
-    /**
-     * Default value of the parameter
-     * @type {*}
-     */
-    this.defaultValue = defaultValue;
-    /**
-     * Expected type for value (compared with typeof)
-     * @type {string}
-     */
-     this.valueType = valueType;
-  }
-
-  /**
-   * Boolean process param constructor.
-   * @class
-   * @param {string} name - Name of the parameter
-   * @param {boolean} [defaultValue = false] - Default value of the parameter
-   */
-  that.BooleanProcessParam = that.extends(AbstractProcessParam,
-  function(name, defaultValue) {
-    defaultValue = !!defaultValue;
-    that.super(this, ['boolean', name, defaultValue]);
-  });
-
-  /**
-   * Number process param constructor.
-   * @class
-   * @param {string} name - Name of the parameter
-   * @param {Object.<string, *>} [options = {}] - Additional options: step (1), min (none), max (none)
-   * @param {number} [defaultValue = 0] - Default value of the parameter
-   */
-  that.NumberProcessParam = that.extends(AbstractProcessParam,
-  function(name, options, defaultValue) {
-    defaultValue = (typeof defaultValue === 'number') ? defaultValue : 0;
-    that.super(this, ['number', name, defaultValue]);
-  });
-
-  /**
-   * Select process param constructor.
-   * @class
-   * @param {string} name - Name of the parameter
-   * @param {Object.<string, *>} values - List of selectable values, with the key as label
-   * @param {string|null} [defaultValue = null] - Key of the value selected by default; none if null
-   */
-  that.SelectProcessParam = that.extends(AbstractProcessParam,
-  function(name, values, defaultValue) {
-    defaultValue = (defaultValue in values) ? defaultValue : null;
-    that.super(this, ['string', name, defaultValue]);
-  });
-
-  /**
    * Process constructor.
    * @class
    * @param {string} name - Name of the process
    * @param {Object.<string, AbstractProcessParam>} paramConfigs - List of process params
-   * @param {Object.<string, function[]>} inputConfigs - List of process inputs
-   * @param {Object.<string, function[]>} outputConfigs - List of process outputs
+   * @param {Object[]} inputConfigs - List of process inputs: {name: string, types: function[], connectable: boolean, configurable: boolean, configOptions: Object}[]
+   * @param {Object[]} outputConfigs - List of process outputs: {name: string, type: function(inputTypes, inputs)}[]
    * @param {function(Object.<string, *>, Object.<string, *>)} run - Function to execute
    */
-  that.Process = function(name, paramConfigs, inputConfigs, outputConfigs, run) {
+  that.Process = function(name, /*paramConfigs, */inputConfigs, outputConfigs, run) {
     /**
      * Name of the process
      * @type {string}
      */
     this.name = name;
     /**
+     * Last execution time in milliseconds
+     * @type {double}
+     */
+    this.lastExecutionTime = null;
+    /**
      * List of process params
      * @type {Object.<string, AbstractProcessParam>}
      */
-    this.paramConfigs = paramConfigs;
+    //this.paramConfigs = paramConfigs;
+
+    // inputConfigs default values:
+    // connectable: true
+    // configurable: true
+    // configOptions: {}
+    for (var ic = 0, iicc = inputConfigs.length; ic < iicc; ++ic) {
+      var inputConfig = inputConfigs[ic];
+      if (typeof inputConfig.connectable    === 'undefined') inputConfig.connectable   = true;
+      if (typeof inputConfig.configurable   === 'undefined') inputConfig.configurable  = false;
+      if (typeof inputConfig.configOptions  === 'undefined') inputConfig.configOptions = {};
+    }
     /**
-     * List of process inputs
-     * @type {Object.<string, *>}
+     * List of process inputs: {name: string, types: function[], connectable: boolean, configurable: boolean, configOptions: Object}[]
+     * @type {Object[]}
      */
     this.inputConfigs = inputConfigs;
     /**
-     * List of process outputs
-     * @type {Object.<string, *>}
+     * List of process outputs: {name: string, type: function(inputTypes, inputs)}[]
+     * @type {Object[]}
      */
     this.outputConfigs = outputConfigs;
     /**
      * Function to execute
-     * @type {function(Object.<string, *>, Object.<string, *>)}
+     * @type {function(Array)}
      */
-    this.run = function(inputs, params) {
+    this.run = function(inputs/*, params*/) {
       // Check inputs
-      for (var i in inputConfigs) {
-        if (!(i in inputs)) {
-          throw new Error('Missing input "' + i + '". Abort.');
+      var inputTypes = [];
+      for (var i = 0, ii = inputConfigs.length; i < ii; ++i) {
+        var inputConfig = inputConfigs[i];
+        if (typeof inputs[i] === 'undefined') {
+          throw new Error('Missing input "' + inputConfig.name + '". Abort.');
         }
-        var input = inputs[i], inputConfig = inputConfigs[i], inputSupportedType = false;
-        for (var it in inputConfig) {
-          inputSupportedType = inputSupportedType || (input instanceof inputConfig[it]);
+        var input = inputs[i], inputSupportedType = false;
+        for (var it = 0, iitt = inputConfig.types.length; it < iitt; ++it) {
+          if (input instanceof inputConfig.types[it]) {
+            inputSupportedType = true;
+            inputTypes[i] = inputConfig.types[it];
+          }
         }
         if (!inputSupportedType) {
-          throw new Error('Invalid type for input "' + i + '". Abort.');
+          throw new Error('Invalid type for input "' + inputConfig.name + '". Abort.');
         }
       }
 
-      // Check params
-      for (var p in paramConfigs) {
-        if (!(p in params)) {
-          throw new Error('Missing param "' + p + '". Abort.');
-        }
-        var paramSupportedType = (typeof params[p] === paramConfigs[p].valueType);
-        if (!paramSupportedType) {
-          throw new Error('Invalid type for param "' + p + '". Abort.');
-        }
-      }
+      // Timing: start
+      var processStart = performance.now();
 
       // Run
-      var outputs = run(inputs, params);
+      var outputs = run(inputTypes, inputs/*, params*/);
+
+      // Timing: end
+      var processEnd = performance.now();
+      this.lastExecutionTime = processEnd - processStart;
 
       // Check outputs
-      for (var o in outputConfigs) {
-        if (!(o in outputs)) {
-          throw new Error('Missing output "' + o + '". Abort.');
+      for (var o = 0, oo = outputConfigs.length; o < oo; ++o) {
+        var outputConfig = outputConfigs[o];
+        if (typeof outputs[o] === 'undefined') {
+          throw new Error('Missing output "' + outputConfig.name + '". Abort.');
         }
-        var output = outputs[o], outputConfig = outputConfigs[o], outputSupportedType = false;
-        for (var ot in outputConfig) {
-          outputSupportedType = outputSupportedType || (output instanceof outputConfig[ot]);
-        }
-        if (!outputSupportedType) {
-          throw new Error('Invalid type for output "' + o + '". Abort.');
+        var output = outputs[o];
+        if (!(output instanceof outputConfig.type(inputTypes, inputs))) {
+          throw new Error('Invalid type for output "' + outputConfig.name + '". Abort.');
         }
       }
 
