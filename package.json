@@ -1,7 +1,7 @@
 {
   "name": "impro.js",
   "description": "Image Processing Javascript Library",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "devDependencies": {
     "grunt": "*",
     "grunt-cli": "*",

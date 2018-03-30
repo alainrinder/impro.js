@@ -100,7 +100,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-http-server');
 
-  grunt.registerTask('build', ['jshint', 'concat', 'removeLoggingCalls', 'uglify', 'clean:doc', 'jsdoc']);
+  grunt.registerTask('build', ['test', 'concat', 'removeLoggingCalls', 'uglify', 'clean:doc', 'jsdoc']);
   grunt.registerTask('test', ['jshint', 'jasmine:all']);
   grunt.registerTask('run', ['http-server:dev']);
 };

@@ -17,49 +17,18 @@
 
   <script src="../bin/impro.js"></script>
   <script>
-ImPro.negativeProcess = new ImPro.Process('Negative',
-  [{name: 'Image', types: [ImPro.Uint8ClampedGrayImage, ImPro.Uint8ClampedRgbaImage]}],
-  [{name: 'Image', type: function(inputTypes, inputs) { return inputTypes[0]; }}],
-  function(inputTypes, inputs) {
-    var inputImage = inputs[0], outputImage;
-
-    if (inputTypes[0] === ImPro.Uint8ClampedGrayImage) {
-      outputImage = new ImPro.Uint8ClampedGrayImage(inputImage.width, inputImage.height);
-
-      for (var t = 0, tt = inputImage.length; t < tt; ++t) {
-        outputImage.data[t] = 0xff - inputImage.data[t];
-      }
-    } else if (inputTypes[0] === ImPro.Uint8ClampedRgbaImage) {
-      outputImage = new ImPro.Uint8ClampedRgbaImage(inputImage.width, inputImage.height);
-
-      for (var t = 0, tt = inputImage.length; t < tt; t += 4) {
-        outputImage.data[t + 0] = 0xff - inputImage.data[t + 0];
-        outputImage.data[t + 1] = 0xff - inputImage.data[t + 1];
-        outputImage.data[t + 2] = 0xff - inputImage.data[t + 2];
-        outputImage.data[t + 3] =        inputImage.data[t + 3];
-      }
-    }
-
-    return [outputImage];
-  }
-);
-/*
-var i = new ImPro.Uint8ClampedGrayImage(3, 3, [0, 128, 255, 64, 192, 32, 96, 160, 224])
-console.dir(i);
-var o = ImPro.negativeProcess.run({'Image': i})['Image'];
-console.dir(o);
-*/
 ImPro.Uint8ClampedRgbaImage.fromLocalFile('samples/lena.png', function(i) {
-  //console.dir(i);
   var iCanvas = document.querySelector('canvas#input');
   iCanvas.width = i.width;
   iCanvas.height = i.height;
   i.toCanvas(iCanvas);
-  var o = ImPro.negativeProcess.run([i])[0];
+  var k = new ImPro.Float32GrayImage(3, 3, [-1, -2, -1, -2, 12, -2, -1, -2, -1]);
+  var o = ImPro.convolution.run([i, k, true])[0];
   var oCanvas = document.querySelector('canvas#output');
   oCanvas.width = o.width;
   oCanvas.height = o.height;
   o.toCanvas(oCanvas);
+  console.log('Execution time: ' + ImPro.convolution.lastExecutionTime + ' ms');
 });
   </script>
 </body>

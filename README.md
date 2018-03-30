@@ -4,8 +4,8 @@
 **Im**age **Pro**cessing Javascript Library &amp; Web App
 
 ## Version
-Current version is **0.0.3**
-* First working example
+Current version is **0.1.0** *(31.03.2018)*
+* Basic convolution process
 
 You can find the changelog on [CHANGELOG.md](./CHANGELOG.md)
 

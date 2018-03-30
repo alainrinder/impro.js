@@ -107,19 +107,56 @@
      * @param {number} height - The height of the image
      * @param {TypedArray} [data] - An array containing pixel data
      */
-    that[dataType + channelProfile + 'Image'] = that.extends(AbstractImage,
-    function(width, height, data) {
+    return that.extends(AbstractImage, function(width, height, data) {
       that.super(this, [dataType, channelProfile, width, height, data]);
     });
   }
 
+  /**
+   * Predefined groups of image type
+   * @type {Object.<string, function[]>}
+   */
+  that.imageTypeGroups = {
+    all: []
+  };
+  for (var t = 0, tt = that.dataTypes.length; t < tt; ++t) {
+    that.imageTypeGroups[that.dataTypes[t]] = [];
+  }
+  for (var channelProfile in that.channelProfiles) {
+    that.imageTypeGroups[channelProfile] = [];
+  }
+
+  /**
+   * Image type string from data type and channel profile
+   * @param {string} dataType - Type of data store in pixel data (see dataTypes array)
+   * @param {string} channelProfile - Type and number of channels (see channelProfiles array)
+   * @returns {string} Image type string
+   */
+   function getImageTypeString(dataType, channelProfile) {
+     return dataType + channelProfile + 'Image';
+   }
+
   // For each data type, for each channel profile (Gray, RGB, RGBA), create an image constructor
-  for (var t in that.dataTypes) {
+  for (t = 0, tt = that.dataTypes.length; t < tt; ++t) {
     var dataType = that.dataTypes[t];
-    for (var p in that.channelProfiles) {
-      buildImageConstructor(dataType, p);
+    for (channelProfile in that.channelProfiles) {
+      var imageType = buildImageConstructor(dataType, channelProfile);
+      that[getImageTypeString(dataType, channelProfile)] = imageType;
+      that.imageTypeGroups[dataType].push(imageType);
+      that.imageTypeGroups[channelProfile].push(imageType);
+      that.imageTypeGroups.all.push(imageType);
     }
   }
+
+  /**
+   * Image type from data type and channel profile
+   * @param {string} dataType - Type of data store in pixel data (see dataTypes array)
+   * @param {string} channelProfile - Type and number of channels (see channelProfiles array)
+   * @returns {function} Image type
+   */
+   that.getImageType = function(dataType, channelProfile) {
+     return that[getImageTypeString(dataType, channelProfile)];
+   };
 
   /**
    * Read an Uint8ClampedRgbaImage from an existing canvas.
