@@ -4,8 +4,8 @@
 **Im**age **Pro**cessing Javascript Library &amp; Web App
 
 ## Version
-Current version is **0.1.0** *(31.03.2018)*
-* Basic convolution process
+Current version is **0.1.1** *(31.03.2018)*
+* Channel profile support for convolution
 
 You can find the changelog on [CHANGELOG.md](./CHANGELOG.md)
 

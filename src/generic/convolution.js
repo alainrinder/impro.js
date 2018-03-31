@@ -3,6 +3,7 @@
     'LeaveBlack', // Set pixels black in areas near image borders
     'LeaveWhite', // Set pixels white in areas near image borders
     'LeavePristine', // Keep input pixels in areas near image borders
+    'CropImage', // Output image will be smaller than input image
     'CropKernel', // Ignore outside kernel values (kernel sum can be modified!)
     'SquashKernel', // Report any outside kernel value on the nearest inside kernel value (same as DuplicateBorder)
     'DuplicateBorder', // Convolve as if the pixel border was duplicated on and on (same as SquashKernel)
@@ -14,7 +15,7 @@
       {name: 'Image', types: that.imageTypeGroups.all},
       {name: 'Kernel', types: [that.Float32GrayImage], connectable: true, configurable: true},
       {name: 'Normalize', types: ['boolean'], default: true, connectable: false, configurable: true},
-      {name: 'BorderPolicy', types: [that.convolutionBorderPolicy], default: that.convolutionBorderPolicies.SquashKernel, connectable: false, configurable: true}
+      {name: 'BorderPolicy', types: [that.convolutionBorderPolicy], default: that.convolutionBorderPolicies.LeaveBlack, connectable: false, configurable: true}
     ],
     [
       {name: 'Image', type: function(inputTypes, inputs) { return inputTypes[0]; }}
@@ -29,7 +30,13 @@
           outputImage = new outputImageType(tempImage.width, tempImage.height);
       var inputData  = inputImage.data,
           tempData   = tempImage.data,
-          outputData = outputImage.data;
+          outputData = outputImage.data,
+          kernelData = kernel.data;
+      var inputDataLength  = inputData.length,
+          tempDataLength   = tempData.length,
+          outputDataLength = outputData.length,
+          kernelDataLength = kernelData.length;
+      var channelCount = that.channelProfiles[inputImage.channelProfile], c = 0;
 
           /*
            * IMAGE LIMITS & AREAS
@@ -79,149 +86,177 @@
           y   = 0, // y on image (both input, temp & output)
           dx  = inputImage.dx, // dx on image (both input, temp & output)
           dy  = inputImage.dy, // dy on image (both input, temp & output)
+          xSrc = 0, // x+kx on image (assuming (0,0) on kernel is at its center)
+          ySrc = 0, // y+ky on image (assuming (0,0) on kernel is at its center)
           kx  = 0, // x on kernel
           ky  = 0, // y on kernel
-          kdx = 1, // dx on kernel
-          kdy = kernelWidth, // dy on kernel
-          kxy = 0, // value at x,y on kernel
-          z   = 0, // index in data array matching (x,y) location
-          zOffset = 0; // index offset in data array between (x,y) and (x+kx, y+ky) locations (assuming (0,0) on kernel is at its center)
+          kdx = kernel.dx, // dx on kernel
+          kdy = kernel.dy, // dy on kernel
+          kxy = 0; // value at x,y on kernel
+      var z          = 0, // index in data array matching (x,y) location
+          dz         = dx, // dz on image (both input, temp & output)
+          zSrc       = 0, // index in data array matching (xSrc, ySrc)
+          zSrcOffset = 0, // index offset in data array between (x,y) and (xSrc, ySrc)
+          kz         = 0, // z on kernel
+          kdz        = kdx, // dz on kernel
+          kernelSum  = 0;
 
-      var t = 0, tt = 0, tSrc = 0;
-
-      var srcX = 0, srcY = 0;
-
+      // Border areas
       for (ky = 0; ky < kernelHeight; ++ky) {
         for (kx = 0; kx < kernelWidth; ++kx) {
-          kxy = kernel.data[ky*kdy + kx*kdx];
+          kxy = kernelData[ky*kdy + kx*kdx];
 
           if (kxy === 0) continue;
-
-          zOffset = (kx - kernelHalfWidth)*dx + (ky - kernelHalfHeight)*dy;
 
           // Top Left area
           for (y = 0; y < safeTopMargin; ++y) {
             for (x = 0; x < safeLeftMargin; ++x) {
-              srcX = x + kx - kernelHalfWidth;
-              srcY = y + ky - kernelHalfHeight;
-              tSrc = x*dx + y*dy;
-              t = (srcX < 0 ? 1 - srcX : srcX)*dx + (srcY < 0 ? 1 - srcY : srcY)*dy;
-              tempData[tSrc] += inputData[t]*kxy;
-              tempData[tSrc + 1] += inputData[t + 1]*kxy;
-              tempData[tSrc + 2] += inputData[t + 2]*kxy;
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = (xSrc < 0 ? 1 - xSrc : xSrc)*dx + (ySrc < 0 ? 1 - ySrc : ySrc)*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
             }
           }
 
           // Top area
           for (y = 0; y < safeTopMargin; ++y) {
             for (x = safeLeftMargin; x < safeRightMargin; ++x) {
-              srcX = x + kx - kernelHalfWidth;
-              srcY = y + ky - kernelHalfHeight;
-              tSrc = x*dx + y*dy;
-              t = (srcX < 0 ? 1 - srcX : srcX)*dx + (srcY < 0 ? 1 - srcY : srcY)*dy;
-              tempData[tSrc] += inputData[t]*kxy;
-              tempData[tSrc + 1] += inputData[t + 1]*kxy;
-              tempData[tSrc + 2] += inputData[t + 2]*kxy;
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = xSrc*dx + (ySrc < 0 ? 1 - ySrc : ySrc)*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
             }
           }
 
-          // Bottom strip: G + H
-          for (y = safeBottomMargin; y < imageHeight; ++y) {
-            for (x = 0; x < safeRightMargin; ++x) {
-              srcX = x + kx - kernelHalfWidth;
-              srcY = y + ky - kernelHalfHeight;
-              tSrc = x*dx + y*dy;
-              t = (srcX < 0 ? 1 - srcX : srcX)*dx + (srcY < imageHeight ? srcY : 2*imageHeight - srcY - 1)*dy;
-              tempData[tSrc] += inputData[t]*kxy;
-              tempData[tSrc + 1] += inputData[t + 1]*kxy;
-              tempData[tSrc + 2] += inputData[t + 2]*kxy;
+          // Top Right area
+          for (y = 0; y < safeTopMargin; ++y) {
+            for (x = safeRightMargin; x < imageWidth; ++x) {
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = (xSrc < imageWidth ? xSrc : 2*imageWidth - xSrc - 1)*dx + (ySrc < 0 ? 1 - ySrc : ySrc)*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
             }
           }
 
-          // Left strip: D
+          // Left area
           for (y = safeTopMargin; y < safeBottomMargin; ++y) {
             for (x = 0; x < safeLeftMargin; ++x) {
-              srcX = x + kx - kernelHalfWidth;
-              srcY = y + ky - kernelHalfHeight;
-              tSrc = x*dx + y*dy;
-              t = (srcX < 0 ? 1 - srcX : srcX)*dx + (srcY < 0 ? 1 - srcY : srcY)*dy;
-              tempData[tSrc] += inputData[t]*kxy;
-              tempData[tSrc + 1] += inputData[t + 1]*kxy;
-              tempData[tSrc + 2] += inputData[t + 2]*kxy;
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = (xSrc < 0 ? 1 - xSrc : xSrc)*dx + ySrc*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
             }
           }
 
-          // Right strip: C + F
-          for (y = 0; y < safeBottomMargin; ++y) {
+          // Right area
+          for (y = safeTopMargin; y < safeBottomMargin; ++y) {
             for (x = safeRightMargin; x < imageWidth; ++x) {
-              srcX = x + kx - kernelHalfWidth;
-              srcY = y + ky - kernelHalfHeight;
-              tSrc = x*dx + y*dy;
-              t = (srcX < imageWidth ? srcX : 2*imageWidth - srcX - 1)*dx + (srcY < 0 ? 1 - srcY : srcY)*dy;
-              tempData[tSrc] += inputData[t]*kxy;
-              tempData[tSrc + 1] += inputData[t + 1]*kxy;
-              tempData[tSrc + 2] += inputData[t + 2]*kxy;
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = (xSrc < imageWidth ? xSrc : 2*imageWidth - xSrc - 1)*dx + ySrc*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
             }
           }
 
-          // Bottom right corner: I
+          // Bottom Left area
+          for (y = safeBottomMargin; y < imageHeight; ++y) {
+            for (x = 0; x < safeRightMargin; ++x) {
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = (xSrc < 0 ? 1 - xSrc : xSrc)*dx + (ySrc < imageHeight ? ySrc : 2*imageHeight - ySrc - 1)*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
+            }
+          }
+
+          // Bottom area
+          for (y = safeBottomMargin; y < imageHeight; ++y) {
+            for (x = 0; x < safeRightMargin; ++x) {
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = xSrc*dx + (ySrc < imageHeight ? ySrc : 2*imageHeight - ySrc - 1)*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
+            }
+          }
+
+          // Bottom Right area
           for (y = safeBottomMargin; y < imageHeight; ++y) {
             for (x = safeRightMargin; x < imageWidth; ++x) {
-              srcX = x + kx - kernelHalfWidth;
-              srcY = y + ky - kernelHalfHeight;
-              tSrc = x*dx + y*dy;
-              t = (srcX < imageWidth ? srcX : 2*imageWidth - srcX - 1)*dx + (srcY < imageHeight ? srcY : 2*imageHeight - srcY - 1)*dy;
-              tempData[tSrc] += inputData[t]*kxy;
-              tempData[tSrc + 1] += inputData[t + 1]*kxy;
-              tempData[tSrc + 2] += inputData[t + 2]*kxy;
+              z = x*dx + y*dy;
+              xSrc = x + kx - kernelHalfWidth;
+              ySrc = y + ky - kernelHalfHeight;
+              zSrc = (xSrc < imageWidth ? xSrc : 2*imageWidth - xSrc - 1)*dx + (ySrc < imageHeight ? ySrc : 2*imageHeight - ySrc - 1)*dy;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
             }
           }
         }
       }
 
-      // Center: E
+      // Center area
       for (ky = 0; ky < kernelHeight; ++ky) {
         for (kx = 0; kx < kernelWidth; ++kx) {
-          kxy = kernel.data[ky*kdy + kx*kdx];
-          zOffset = (kx - kernelHalfWidth)*dx + (ky - kernelHalfHeight)*dy;
+          kxy = kernelData[ky*kdy + kx*kdx];
+          zSrcOffset = (kx - kernelHalfWidth)*dx + (ky - kernelHalfHeight)*dy;
           for (y = safeTopMargin; y < safeBottomMargin; ++y) {
             for (x = safeLeftMargin; x < safeRightMargin; ++x) {
               z = y*dy + x*dx;
-              tempData[z    ] += inputData[z + zOffset    ]*kxy;
-              tempData[z + 1] += inputData[z + zOffset + 1]*kxy;
-              tempData[z + 2] += inputData[z + zOffset + 2]*kxy;
+              zSrc = z + zSrcOffset;
+              for (c = 0; c < channelCount; ++c) {
+                tempData[z + c] += inputData[zSrc + c]*kxy;
+              }
             }
           }
         }
       }
 
       if (normalize) {
-        var kernelSum = 0;
-        for (t = 0, tt = kernel.length; t < tt; ++t) {
-          kernelSum += kernel.data[t];
+        for (kz = 0; kz < kernelDataLength; kz += kdz) {
+          kernelSum += kernelData[kz];
         }
 
         if (kernelSum === 0) { // Set 0 at 128
-          for (t = 0, tt = tempData.length; t < tt; t += tempImage.dx) {
-            tempData[t    ] += 0x80;
-            tempData[t + 1] += 0x80;
-            tempData[t + 2] += 0x80;
+          for (z = 0; z < tempDataLength; z += dz) {
+            tempData[z    ] += 0x80;
+            tempData[z + 1] += 0x80;
+            tempData[z + 2] += 0x80;
           }
         } else {
-          for (t = 0, tt = tempData.length; t < tt; t += tempImage.dx) {
-            tempData[t    ] /= kernelSum;
-            tempData[t + 1] /= kernelSum;
-            tempData[t + 2] /= kernelSum;
+          for (z = 0; z < tempDataLength; z += dz) {
+            tempData[z    ] /= kernelSum;
+            tempData[z + 1] /= kernelSum;
+            tempData[z + 2] /= kernelSum;
           }
         }
       }
 
       // Conversion
-      for (t = 0, tt = tempData.length; t < tt; t += tempImage.dx) {
-        outputData[t    ] = Math.round(tempData[t    ]);
-        outputData[t + 1] = Math.round(tempData[t + 1]);
-        outputData[t + 2] = Math.round(tempData[t + 2]);
-        outputData[t + 3] = 0xff;
+      for (z = 0; z < tempDataLength; z += dz) {
+        outputData[z    ] = Math.round(tempData[z    ]);
+        outputData[z + 1] = Math.round(tempData[z + 1]);
+        outputData[z + 2] = Math.round(tempData[z + 2]);
+        outputData[z + 3] = 0xff;
       }
 
       return [outputImage];
