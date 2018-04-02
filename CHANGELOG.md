@@ -2,7 +2,7 @@
 Current version is **0.1.2** *(02.04.2018)*
 
 #### Version 0.1.2 (02.04.2018)
-* Gaussian kernel
+* Gaussian kernel for convolution
 
 #### Version 0.1.1 (31.03.2018)
 * Channel profile support for convolution

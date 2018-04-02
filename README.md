@@ -5,7 +5,7 @@
 
 ## Version
 Current version is **0.1.2** *(02.04.2018)*
-* Channel profile support for convolution
+* Gaussian kernel for convolution
 
 You can find the changelog on [CHANGELOG.md](./CHANGELOG.md)
 
