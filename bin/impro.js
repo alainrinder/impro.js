@@ -438,6 +438,43 @@ var ImPro = (function() {
 
 
 (function(that) {
+  that.convolutionKernelSum = function(kernel) {
+    var kernelSum = 0;
+    for (var kz = 0; kz < kernel.data.length; ++kz) {
+      kernelSum += kernel.data[kz];
+    }
+    return kernelSum;
+  };
+
+  function buildKernel(kernelSize, expression) {
+    var kernel = new that.Float32GrayImage(kernelSize, kernelSize);
+    var kernelHalfSize = kernelSize >> 1, dx = 1, dy = kernelSize;
+    for (var y = -kernelHalfSize; y <= kernelHalfSize; ++y) {
+      for (var x = -kernelHalfSize; x <= kernelHalfSize; ++x) {
+        kernel.data[(y + kernelHalfSize)*dy + (x + kernelHalfSize)*dx] = expression(x, y);
+      }
+    }
+    return kernel;
+  }
+
+  that.convolutionKernels = {
+    'Gaussian': function(kernelSize) {
+      // 99.7% between -3sigma and +3sigma:
+      // https://en.wikipedia.org/wiki/Normal_distribution#Standard_deviation_and_coverage
+      // set sigma = (kernelSize/2 + 1)/3 so that 99.7% is in the kernel
+      var sigma = ((kernelSize >> 1) + 1)/3;
+      var kernel = buildKernel(kernelSize, function(x, y) {
+        return Math.exp(-(x*x + y*y)/(sigma*sigma));
+      });
+      // Normalize
+      /*var kernelSum = that.convolutionKernelSum(kernel);
+      for (var kz = 0; kz < kernel.data.length; ++kz) {
+        kernel.data[kz] /= kernelSum;
+      }*/
+      return kernel;
+    }
+  };
+
   that.convolutionBorderPolicies = that.enum([
     'LeaveBlack', // Set pixels black in areas near image borders
     'LeaveWhite', // Set pixels white in areas near image borders
@@ -473,8 +510,7 @@ var ImPro = (function() {
           kernelData = kernel.data;
       var inputDataLength  = inputData.length,
           tempDataLength   = tempData.length,
-          outputDataLength = outputData.length,
-          kernelDataLength = kernelData.length;
+          outputDataLength = outputData.length;
       var channelCount = that.channelProfiles[inputImage.channelProfile], c = 0;
 
           /*
@@ -536,8 +572,6 @@ var ImPro = (function() {
           dz         = dx, // dz on image (both input, temp & output)
           zSrc       = 0, // index in data array matching (xSrc, ySrc)
           zSrcOffset = 0, // index offset in data array between (x,y) and (xSrc, ySrc)
-          kz         = 0, // z on kernel
-          kdz        = kdx, // dz on kernel
           kernelSum  = 0;
 
       // Border areas
@@ -556,10 +590,7 @@ var ImPro = (function() {
               zSrc = (xSrc < 0 ? 1 - xSrc : xSrc)*dx + (ySrc < 0 ? 1 - ySrc : ySrc)*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
 
@@ -572,10 +603,7 @@ var ImPro = (function() {
               zSrc = xSrc*dx + (ySrc < 0 ? 1 - ySrc : ySrc)*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
 
@@ -588,10 +616,7 @@ var ImPro = (function() {
               zSrc = (xSrc < imageWidth ? xSrc : 2*imageWidth - xSrc - 1)*dx + (ySrc < 0 ? 1 - ySrc : ySrc)*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
 
@@ -604,10 +629,7 @@ var ImPro = (function() {
               zSrc = (xSrc < 0 ? 1 - xSrc : xSrc)*dx + ySrc*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
 
@@ -620,42 +642,33 @@ var ImPro = (function() {
               zSrc = (xSrc < imageWidth ? xSrc : 2*imageWidth - xSrc - 1)*dx + ySrc*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
 
           // Bottom Left area
           for (y = safeBottomMargin; y < imageHeight; ++y) {
-            for (x = 0; x < safeRightMargin; ++x) {
+            for (x = 0; x < safeLeftMargin; ++x) {
               z = x*dx + y*dy;
               xSrc = x + kx - kernelHalfWidth;
               ySrc = y + ky - kernelHalfHeight;
               zSrc = (xSrc < 0 ? 1 - xSrc : xSrc)*dx + (ySrc < imageHeight ? ySrc : 2*imageHeight - ySrc - 1)*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
 
           // Bottom area
           for (y = safeBottomMargin; y < imageHeight; ++y) {
-            for (x = 0; x < safeRightMargin; ++x) {
+            for (x = safeLeftMargin; x < safeRightMargin; ++x) {
               z = x*dx + y*dy;
               xSrc = x + kx - kernelHalfWidth;
               ySrc = y + ky - kernelHalfHeight;
               zSrc = xSrc*dx + (ySrc < imageHeight ? ySrc : 2*imageHeight - ySrc - 1)*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
 
@@ -668,10 +681,7 @@ var ImPro = (function() {
               zSrc = (xSrc < imageWidth ? xSrc : 2*imageWidth - xSrc - 1)*dx + (ySrc < imageHeight ? ySrc : 2*imageHeight - ySrc - 1)*dy;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
         }
@@ -688,19 +698,14 @@ var ImPro = (function() {
               zSrc = z + zSrcOffset;
               for (c = 0; c < channelCount; ++c) {
                 tempData[z + c] += inputData[zSrc + c]*kxy;
-              }/*
-              tempData[z    ] += inputData[zSrc    ]*kxy;
-              tempData[z + 1] += inputData[zSrc + 1]*kxy;
-              tempData[z + 2] += inputData[zSrc + 2]*kxy;*/
+              }
             }
           }
         }
       }
 
       if (normalize) {
-        for (kz = 0; kz < kernelDataLength; kz += kdz) {
-          kernelSum += kernelData[kz];
-        }
+        kernelSum = that.convolutionKernelSum(kernel);
 
         if (kernelSum === 0) { // Set 0 at 128
           for (z = 0; z < tempDataLength; z += dz) {
