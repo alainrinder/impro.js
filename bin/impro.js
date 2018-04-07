@@ -64,9 +64,16 @@ var ImPro = (function() {
    * Define a typed enum from an array of string or an associative array of number.
    * Enum items are instances of PseudoEnumItemClass.
    *
-   * var enumExample = that.enum(["Label1", "Label2"], EnumExampleItem = that.EnumItem);
-   * enumExample.Label1 instanceof EnumExampleItem; // true
-   * 
+   * var ArrayEnumItem;
+   * var arrayEnum = that.enum(['Label1', 'Label2'], ArrayEnumItem = that.EnumItem);
+   * arrayEnum.Label2 instanceof ArrayEnumItem; // true
+   * objectEnum.Label2.value === 1; // true
+   *
+   * var ObjectEnumItem;
+   * var objectEnum = that.enum({'Label1': 10, 'Label2': 20}, ObjectEnumItem = that.EnumItem);
+   * objectEnum.Label1 instanceof ObjectEnumItem; // true
+   * objectEnum.Label1.value === 10; // true
+   *
    * @param {(string[]|Object.<string, number>)} dataList - list of keys, with or without
    * @param {function} [PseudoEnumItemClass] - class of enum items (used for type checking)
    */
@@ -83,6 +90,19 @@ var ImPro = (function() {
       }
     }
     return result;
+  };
+
+  /**
+   * Improved version of typeof operator.
+   * Supports: Undefined, Null, Boolean, Number, String, Array, Function, Object, RegExp, Arguments, Math, JSON,
+   * ImPro, TypedArray(Uint8Clamped, Uint8, Uint16, Uint32, Int8, Int16, Int32, Float32, Float64).
+   * See Jasmine tests for examples.
+   *
+   * @param {*} instance - object or primitive whose type is to be returned
+   * @return {string} Type as a capitalized string
+   */
+  that.typeof = function(instance) {
+    return (instance === that) ? 'ImPro' : Object.prototype.toString.call(instance).slice(8, -1);
   };
 })(ImPro);
 
@@ -438,6 +458,21 @@ var ImPro = (function() {
 
 
 (function(that) {
+  /**
+   * @param {...*} args - ( width:number, height:number | size:number ), [ data:Float32Array | expression:function(x,y) ]
+   */
+  /*that.ConvolutionKernel = that.extends(that.Float32GrayImage, function(args) {
+    var width, height, data;
+    if (typeof arguments[0] !== 'number') throw new Error('Invalid argument');
+    switch (typeof arguments[1]) {
+      case 'number':
+        width = arguments[0], height = arguments[1];
+        break;
+      case ''
+    }
+    // arguments
+  });*/
+
   that.convolutionKernelSum = function(kernel) {
     var kernelSum = 0;
     for (var kz = 0; kz < kernel.data.length; ++kz) {
@@ -467,10 +502,10 @@ var ImPro = (function() {
         return Math.exp(-(x*x + y*y)/(sigma*sigma));
       });
       // Normalize
-      /*var kernelSum = that.convolutionKernelSum(kernel);
+      var kernelSum = that.convolutionKernelSum(kernel);
       for (var kz = 0; kz < kernel.data.length; ++kz) {
         kernel.data[kz] /= kernelSum;
-      }*/
+      }
       return kernel;
     }
   };

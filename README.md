@@ -4,8 +4,9 @@
 **Im**age **Pro**cessing Javascript Library &amp; Web App
 
 ## Version
-Current version is **0.1.2** *(02.04.2018)*
-* Gaussian kernel for convolution
+Current version is **0.1.3** *(07.04.2018)*
+* Add typeof method in utils
+* Complete utils tests
 
 You can find the changelog on [CHANGELOG.md](./CHANGELOG.md)
 
