@@ -1,5 +1,8 @@
 # Changelog
-Current version is **0.1.3** *(07.04.2018)*
+Current version is **0.1.4** *(09.04.2018)*
+
+#### Version 0.1.4 (09.04.2018)
+* Improve core tests
 
 #### Version 0.1.3 (07.04.2018)
 * Add typeof method in utils

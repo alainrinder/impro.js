@@ -3,7 +3,7 @@
 // main.js
 describe('main', function() {
   it('has no spec implemented', function() {
-    expect(true).toBe(true);
+    expect().nothing();
   });
 });
 
@@ -15,10 +15,10 @@ describe('utils', function() {
     var a = new A();
     var b = new B();
 
-    expect(a instanceof A).toBe(true);
-    expect(b instanceof B).toBe(true);
-    expect(b instanceof A).toBe(true);
-    expect(a instanceof B).toBe(false);
+    expect(a).toBeAnInstanceOf(A);
+    expect(b).toBeAnInstanceOf(B);
+    expect(b).toBeAnInstanceOf(A);
+    expect(a).not.toBeAnInstanceOf(B);
   });
 
   it('allows a child class to call its parent constructor (super)', function() {
@@ -33,10 +33,10 @@ describe('utils', function() {
     var a = new A('test');
     var b = new B(true, 5);
 
-    expect(a instanceof A).toBe(true);
-    expect(b instanceof B).toBe(true);
-    expect(b instanceof A).toBe(true);
-    expect(a instanceof B).toBe(false);
+    expect(a).toBeAnInstanceOf(A);
+    expect(b).toBeAnInstanceOf(B);
+    expect(b).toBeAnInstanceOf(A);
+    expect(a).not.toBeAnInstanceOf(B);
     expect(a.paramA).toBe('test');
     expect(b.paramA).toBe(5);
     expect(b.paramB1).toBe(true);
@@ -47,10 +47,10 @@ describe('utils', function() {
     var ArrayEnumItem;
     var arrayEnum = ImPro.enum(['Label1', 'Label2'], ArrayEnumItem = ImPro.EnumItem);
 
-    expect(arrayEnum.Label1 instanceof ArrayEnumItem).toBe(true);
-    expect(arrayEnum.Label2 instanceof ImPro.EnumItem).toBe(true);
-    expect(typeof arrayEnum.Label1.value).toBe('number');
-    expect(typeof arrayEnum.Label2.label).toBe('string');
+    expect(arrayEnum.Label1).toBeAnInstanceOf(ArrayEnumItem);
+    expect(arrayEnum.Label2).toBeAnInstanceOf(ImPro.EnumItem);
+    expect(arrayEnum.Label1.value).toBeANumber();
+    expect(arrayEnum.Label2.label).toBeAString();
     expect(arrayEnum.Label1.value).toBe(0);
     expect(arrayEnum.Label2.value).toBe(1);
     expect(arrayEnum.Label1.label).toBe('Label1');
@@ -61,10 +61,10 @@ describe('utils', function() {
     var ObjectEnumItem;
     var objectEnum = ImPro.enum({'Label1': 10, 'Label2': 20}, ObjectEnumItem = ImPro.EnumItem);
 
-    expect(objectEnum.Label1 instanceof ObjectEnumItem).toBe(true);
-    expect(objectEnum.Label2 instanceof ImPro.EnumItem).toBe(true);
-    expect(typeof objectEnum.Label1.value).toBe('number');
-    expect(typeof objectEnum.Label2.label).toBe('string');
+    expect(objectEnum.Label1).toBeAnInstanceOf(ObjectEnumItem);
+    expect(objectEnum.Label2).toBeAnInstanceOf(ImPro.EnumItem);
+    expect(objectEnum.Label1.value).toBeANumber();
+    expect(objectEnum.Label2.label).toBeAString();
     expect(objectEnum.Label1.value).toBe(10);
     expect(objectEnum.Label2.value).toBe(20);
     expect(objectEnum.Label1.label).toBe('Label1');
@@ -97,11 +97,13 @@ describe('utils', function() {
     expect(ImPro.typeof(Array)).toBe('Function');
     expect(ImPro.typeof(Function)).toBe('Function');
     expect(ImPro.typeof(Object)).toBe('Function');
+    expect(ImPro.typeof(Date)).toBe('Function');
     expect(ImPro.typeof(RegExp)).toBe('Function');
     expect(ImPro.typeof(Math.abs)).toBe('Function');
     expect(ImPro.typeof(JSON.stringify)).toBe('Function');
     expect(ImPro.typeof(new Object())).toBe('Object');
     expect(ImPro.typeof({})).toBe('Object');
+    expect(ImPro.typeof(new Date())).toBe('Date');
     expect(ImPro.typeof(new RegExp())).toBe('RegExp');
     expect(ImPro.typeof(/[a-z]/gi)).toBe('RegExp');
     expect(ImPro.typeof(arguments)).toBe('Arguments');
@@ -123,20 +125,20 @@ describe('utils', function() {
 // exception.js
 describe('exception', function() {
   it('has no spec implemented', function() {
-    expect(true).toBe(true);
+    expect().nothing();
   });
 });
 
 // image.js
 describe('image', function() {
   it('has no spec implemented', function() {
-    expect(true).toBe(true);
+    expect().nothing();
   });
 });
 
 // process.js
 describe('process', function() {
   it('has no spec implemented', function() {
-    expect(true).toBe(true);
+    expect().nothing();
   });
 });

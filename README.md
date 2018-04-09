@@ -4,9 +4,8 @@
 **Im**age **Pro**cessing Javascript Library &amp; Web App
 
 ## Version
-Current version is **0.1.3** *(07.04.2018)*
-* Add typeof method in utils
-* Complete utils tests
+Current version is **0.1.4** *(09.04.2018)*
+* Improve core tests
 
 You can find the changelog on [CHANGELOG.md](./CHANGELOG.md)
 

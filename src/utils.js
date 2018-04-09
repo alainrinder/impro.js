@@ -85,8 +85,8 @@
 
   /**
    * Improved version of typeof operator.
-   * Supports: Undefined, Null, Boolean, Number, String, Array, Function, Object, RegExp, Arguments, Math, JSON,
-   * ImPro, TypedArray(Uint8Clamped, Uint8, Uint16, Uint32, Int8, Int16, Int32, Float32, Float64).
+   * Supports: Undefined, Null, Boolean, Number, String, Array, Function, Object, Date, RegExp, Arguments, Math, JSON,
+   * ImPro, TypedArray(Uint8Clamped, Uint8, Uint16, Uint32, Int8, Int16, Int32, Float32, Float64), ...
    * See Jasmine tests for examples.
    *
    * @param {*} instance - object or primitive whose type is to be returned
